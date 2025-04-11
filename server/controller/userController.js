@@ -1,4 +1,5 @@
 const db = require("../models/main");
+const bcrypt = require('bcrypt');
 const {Users} = db;
 
 module.exports = {
@@ -27,6 +28,30 @@ module.exports = {
         console.error("Error: ", error.message);
         res.status(500).json({error: "Internal Server Error"});
     }
+    },
+
+    Login: async(req, res) => {
+        try {
+            const {email, password} = req.body;
+            const user = await Users.findOne({where: {email: email}})
+            const dbPassword = user.password;
+            const match = await bcrypt.compare(password, dbPassword)
+
+            if(!email && !password){return res.status(400).json({error: "No input"})}
+
+            if(!match) {return res.status(400).json({ error: "Wrong email and password combination"})}
+            else{
+                const accessToken = createTokens(user);
+                res.json({
+                    message: "Logged in",
+                    accessToken: accessToken
+                })
+            }
+        }
+        catch(error) {
+            console.error("Error: ", error.message);
+            res.status(500).send("Internal Server Error", error.message);
+        }
     }
 }
 
