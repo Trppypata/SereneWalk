@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  Alert,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -10,7 +17,7 @@ export default function SignInScreen() {
   const [password, setPassword] = useState('');
 
   const handleSignUpNavigation = () => {
-    router.push('/SignUp');
+    router.push('/signup');
   };
 
   const handleLogin = () => {
@@ -19,7 +26,7 @@ export default function SignInScreen() {
       // For now, showing an alert as a placeholder
       Alert.alert('Logged in successfully!', `Welcome back, ${email}`);
       // You could also redirect to another screen, e.g., router.push('/Home');
-      router.push('/homepage');
+      router.push('/home');
     } else {
       Alert.alert('Error', 'Please enter both email and password');
     }
@@ -33,36 +40,44 @@ export default function SignInScreen() {
       <Text style={styles.subtitle}>Welcome back.</Text>
 
       {/* Email Field */}
-<Text style={styles.label}>Email</Text>
-<View style={styles.inputWrapper}>
-  <Ionicons name="mail-outline" size={20} color="#999" style={styles.icon} />
-  <TextInput
-    style={styles.input}
-    placeholder="Your email"
-    keyboardType="email-address"
-    value={email}
-    onChangeText={setEmail}
-  />
-</View>
+      <Text style={styles.label}>Email</Text>
+      <View style={styles.inputWrapper}>
+        <Ionicons
+          name="mail-outline"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Your email"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
+      </View>
 
-{/* Password Field */}
-<Text style={styles.label}>Password</Text>
-<View style={styles.inputWrapper}>
-  <Ionicons name="lock-closed-outline" size={20} color="#999" style={styles.icon} />
-  <TextInput
-    style={styles.input}
-    placeholder="Enter password"
-    secureTextEntry
-    value={password}
-    onChangeText={setPassword}
-  />
-</View>
-
+      {/* Password Field */}
+      <Text style={styles.label}>Password</Text>
+      <View style={styles.inputWrapper}>
+        <Ionicons
+          name="lock-closed-outline"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+      </View>
 
       <TouchableOpacity>
         <Text style={styles.forgotPassword}>Forgot password?</Text>
       </TouchableOpacity>
-
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
@@ -91,14 +106,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#DA549B',
     textAlign: 'center',
-    marginRight:100,
-    marginTop:-50,
+    marginRight: 100,
+    marginTop: -50,
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
     marginBottom: 20,
-    marginRight:200,
+    marginRight: 200,
   },
   label: {
     fontSize: 14,
@@ -108,7 +123,7 @@ const styles = StyleSheet.create({
   },
 
   forgotPassword: {
-    marginLeft:180,
+    marginLeft: 180,
     marginTop: 5,
     color: '#DA549B',
     fontWeight: 'bold',
@@ -148,15 +163,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
   },
-  
+
   input: {
     flex: 1,
     height: '100%',
     fontSize: 16,
   },
-  
+
   icon: {
     marginRight: 10,
-  },  
-  
+  },
 });
