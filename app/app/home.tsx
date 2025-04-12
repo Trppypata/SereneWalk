@@ -61,17 +61,19 @@ export default function HomePage() {
             </View>
 
             <View style={styles.journeyCard}>
-             <Image
+              <Image
                 source={require('@/assets/images/girl.png')}
-                style={styles.journeyImage}/>
-           <View style={styles.journeyTextContainer}>
-             <Text style={styles.journeyTitle}>Start a journey</Text>
-             <Text style={styles.journeySub}>
-                 Enter your destination and the app will navigate you on the most safe route.
-             </Text>
-          </View>
-            <Ionicons name="arrow-forward" size={24} color="#374151" />
-          </View>
+                style={styles.journeyImage}
+              />
+              <View style={styles.journeyTextContainer}>
+                <Text style={styles.journeyTitle}>Start a journey</Text>
+                <Text style={styles.journeySub}>
+                  Enter your destination and the app will navigate you on the
+                  most safe route.
+                </Text>
+              </View>
+              <Ionicons name="arrow-forward" size={24} color="#374151" />
+            </View>
 
             {/* Nearby Services */}
             <View style={styles.services}>
@@ -117,11 +119,17 @@ export default function HomePage() {
 
         {/* Bottom Nav */}
         <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push('/homepage')}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push('/homepage')}
+          >
             <Ionicons name="home" size={24} color="#DA549B" />
             <Text style={styles.navTextActive}>Home</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push('/sos')}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push('/sos')}
+          >
             <MaterialIcons name="sos" size={24} color="gray" />
             <Text style={styles.navText}>SOS</Text>
           </TouchableOpacity>
@@ -129,11 +137,17 @@ export default function HomePage() {
             <Ionicons name="compass" size={24} color="gray" />
             <Text style={styles.navText}>Explore</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push('/safetytips')}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push('/safetytips')}
+          >
             <Ionicons name="bulb" size={24} color="gray" />
             <Text style={styles.navText}>Tips</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}onPress={() => router.push('/profile')}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push('/profile')}
+          >
             <Ionicons name="person" size={24} color="gray" />
             <Text style={styles.navText}>Profile</Text>
           </TouchableOpacity>
@@ -242,30 +256,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  
+
   journeyImage: {
     width: 50,
     height: 50,
     marginRight: 12,
     resizeMode: 'contain',
   },
-  
+
   journeyTextContainer: {
     flex: 1,
   },
-  
+
   journeyTitle: {
     fontWeight: 'bold',
     fontSize: 16,
     color: '#1f2937', // dark text
     marginBottom: 4,
   },
-  
+
   journeySub: {
     fontSize: 13,
     color: '#6b7280', // gray text
   },
-  
+
   services: {
     paddingBottom: 24,
   },

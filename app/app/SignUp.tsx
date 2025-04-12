@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -25,7 +33,7 @@ export default function SignupScreen() {
 
     // Mock sign-up logic, replace with your API call
     Alert.alert('Success', 'Sign-up successful');
-    router.push('/login'); // Redirect to login page after successful sign-up
+    router.push('/home'); // Redirect to login page after successful sign-up
   };
 
   return (
@@ -44,7 +52,12 @@ export default function SignupScreen() {
 
       <Text style={styles.label}>Email</Text>
       <View style={styles.inputContainer}>
-        <Ionicons name="mail-outline" size={20} color="#999" style={styles.icon} />
+        <Ionicons
+          name="mail-outline"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
         <TextInput
           style={styles.inputField}
           placeholder="Your email"
@@ -56,7 +69,12 @@ export default function SignupScreen() {
 
       <Text style={styles.label}>Password</Text>
       <View style={styles.inputContainer}>
-        <Ionicons name="lock-closed-outline" size={20} color="#999" style={styles.icon} />
+        <Ionicons
+          name="lock-closed-outline"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
         <TextInput
           style={styles.inputField}
           placeholder="Enter password"
