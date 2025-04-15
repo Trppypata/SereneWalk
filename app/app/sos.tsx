@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import {
   SafeAreaView,
   View,
@@ -9,12 +9,85 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Audio } from 'expo-av';
+
+const MAX_VOLUME = 1.0; 
 
 export default function App() {
-    const router = useRouter();
+  const router = useRouter();
+
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [isCounting, setIsCounting] = useState(false);
+  const [isSoundPlaying, setIsSoundPlaying] = useState(false);
+
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  const playSosSound = async () => {
+    const { sound } = await Audio.Sound.createAsync(
+      require('@/assets/audio/sos.mp3'),
+      { shouldPlay: true, volume: 0.1, isLooping: true } 
+    );
+    soundRef.current = sound;
+    setIsSoundPlaying(true);
+
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (status.isLoaded) {
+        if (!status.isPlaying && status.didJustFinish) {
+          setIsSoundPlaying(false); 
+        }
+      } else {
+        console.warn('Playback status not loaded:', status);
+      }
+    });
+
+
+    let currentVolume = 0.1;
+    const volumeInterval = setInterval(async () => {
+      if (currentVolume < MAX_VOLUME) {
+        currentVolume = Math.min(currentVolume + 0.1, MAX_VOLUME); 
+        await sound.setVolumeAsync(currentVolume);
+      } else {
+        clearInterval(volumeInterval); 
+      }
+    }, 500);
+  };
+
+  const stopSosSound = async () => {
+    if (soundRef.current) {
+      await soundRef.current.stopAsync();
+      await soundRef.current.unloadAsync();
+      soundRef.current = null;
+      setIsSoundPlaying(false);
+    }
+  };
+
+  const handleSosPress = () => {
+    if (isSoundPlaying) {
+      stopSosSound();
+      return;
+    }
+
+    if (isCounting) return;
+
+    setIsCounting(true);
+    let timeLeft = 3;
+    setCountdown(timeLeft);
+
+    const interval = setInterval(() => {
+      timeLeft -= 1;
+      if (timeLeft === 0) {
+        clearInterval(interval);
+        setCountdown(null);
+        playSosSound();
+        setIsCounting(false);
+      } else {
+        setCountdown(timeLeft);
+      }
+    }, 1000);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      
       <View style={styles.navbar}>
         <View style={styles.locationLeft}>
           <Ionicons name="location" size={18} color="#000" />
@@ -42,47 +115,63 @@ export default function App() {
 
       <View style={styles.sosContainer}>
         <View style={styles.sosBox}>
-          <TouchableOpacity style={styles.sosButton}>
-            <Text style={styles.sosText}>SOS</Text>
-            <Text style={styles.sosSubtext}>Press 3 for second</Text>
+          <TouchableOpacity style={styles.sosButton} onPress={handleSosPress}>
+            {isSoundPlaying ? (
+              <Text style={styles.sosText}>Stop</Text>
+            ) : countdown !== null ? (
+              <Text style={styles.sosText}>{countdown}</Text>
+            ) : (
+              <>
+                <Text style={styles.sosText}>SOS</Text>
+                <Text style={styles.sosSubtext}>Press for 3 seconds</Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </View>
+
       <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem}
-          onPress={() => router.push('/homepage')}>
-            <Ionicons name="home" size={24} color="gray" />
-            <Text style={styles.navText}>Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}
-          onPress={() => router.push('/sos')}>
-            <MaterialIcons name="sos" size={24} color="#DA549B" />
-            <Text style={styles.navTextActive}>SOS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="compass" size={24} color="gray" />
-            <Text style={styles.navText}>Explore</Text>
-          </TouchableOpacity>
-           <TouchableOpacity style={styles.navItem}
-           onPress={() => router.push('/safetytips')}>
-                <Ionicons name="bulb" size={24} color="gray" />
-                <Text style={styles.navText}>Tips</Text>
-            </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push('/profile')}>
-            <Ionicons name="person" size={24} color="gray" />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push('/homepage')}
+        >
+          <Ionicons name="home" size={24} color="gray" />
+          <Text style={styles.navText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push('/sos')}
+        >
+          <MaterialIcons name="sos" size={24} color="#DA549B" />
+          <Text style={styles.navTextActive}>SOS</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="compass" size={24} color="gray" />
+          <Text style={styles.navText}>Explore</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push('/safetytips')}
+        >
+          <Ionicons name="bulb" size={24} color="gray" />
+          <Text style={styles.navText}>Tips</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push('/profile')}
+        >
+          <Ionicons name="person" size={24} color="gray" />
+          <Text style={styles.navText}>Profile</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
-            
-    
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20, 
+    paddingHorizontal: 20,
     paddingTop: 12,
     backgroundColor: '#fff',
   },
@@ -119,7 +208,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
     gap: 12,
-    marginHorizontal: 20, 
+    marginHorizontal: 20,
   },
   textSection: {
     flex: 1,
@@ -141,7 +230,6 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 65,
   },
-  
   sosContainer: {
     marginTop: 50,
     alignItems: 'center',
