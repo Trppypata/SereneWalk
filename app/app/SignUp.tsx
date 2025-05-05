@@ -19,6 +19,11 @@ export default function SignupScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
 
   const handleSignUp = async () => {
     if (!fullName || !email || !password) {
@@ -104,10 +109,18 @@ export default function SignupScreen() {
         <TextInput
           style={styles.inputField}
           placeholder="Enter password"
-          secureTextEntry
+          secureTextEntry={!isPasswordVisible}
           value={password}
           onChangeText={setPassword}
         />
+        <TouchableOpacity onPress={togglePasswordVisibility}>
+          <Ionicons
+            name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+            size={20}
+            color="#999"
+            style={styles.icon}
+          />
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleSignUp}>

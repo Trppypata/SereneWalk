@@ -19,6 +19,7 @@ export default function SignInScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -29,6 +30,10 @@ export default function SignInScreen() {
     };
     checkLoginStatus();
   }, []);
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
 
   const handleLogin = async () => {
     if (email && password) {
@@ -101,10 +106,18 @@ export default function SignInScreen() {
         <TextInput
           style={styles.input}
           placeholder="Enter password"
-          secureTextEntry
+          secureTextEntry={!isPasswordVisible}
           value={password}
           onChangeText={setPassword}
         />
+        <TouchableOpacity onPress={togglePasswordVisibility}>
+          <Ionicons
+            name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+            size={20}
+            color="#999"
+            style={styles.icon}
+          />
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity>
