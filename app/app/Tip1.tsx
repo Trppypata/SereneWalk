@@ -1,38 +1,58 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
+import { useTheme } from './constants/ThemeContext';
 
 const Tip1 = () => {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerWrapper}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#000' }]}>
+      <View
+        style={[
+          styles.headerWrapper,
+          isDarkMode && { backgroundColor: '#333' },
+        ]}
+      >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.push('/safetytips')} style={styles.backButton}>
-            <ArrowLeft size={30} color="#fff" />
+          <TouchableOpacity
+            onPress={() => router.push('/safetytips')}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={30} color={isDarkMode ? '#fff' : '#000'} />
           </TouchableOpacity>
-          <Text style={styles.headerText}>Safety Tips</Text>
+          <Text style={[styles.headerText, isDarkMode && { color: '#fff' }]}>
+            Safety Tips
+          </Text>
         </View>
-        <View style={styles.headerCurve} />
+        <View
+          style={[
+            styles.headerCurve,
+            isDarkMode && { backgroundColor: '#000' },
+          ]}
+        />
       </View>
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>Stay Alert.</Text>
-        
-       
+        <Text style={[styles.title, isDarkMode && { color: '#fff' }]}>
+          Stay Alert.
+        </Text>
+
         <Image
           source={require('@/assets/images/stayalert.png')} // make sure to update the path to your image
           style={styles.image}
         />
-        <Text style={styles.subtitle}>Be Vigilant.</Text>
+        <Text style={[styles.subtitle, isDarkMode && { color: '#ccc' }]}>
+          Be Vigilant.
+        </Text>
 
-      
-        <Text style={styles.paragraph}>
-          Our safety tip blog is your ultimate resource for all things awareness. Whether you're walking
-          at night or navigating a crowded area, stay alert and walk with confidence. Trust your instincts,
-          avoid distractions, and stay in well-lit areas to reduce risks.
+        <Text style={[styles.paragraph, isDarkMode && { color: '#ccc' }]}>
+          Our safety tip blog is your ultimate resource for all things
+          awareness. Whether you're walking at night or navigating a crowded
+          area, stay alert and walk with confidence. Trust your instincts, avoid
+          distractions, and stay in well-lit areas to reduce risks.
         </Text>
       </View>
     </View>

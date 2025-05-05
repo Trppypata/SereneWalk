@@ -15,13 +15,14 @@ import Constants from 'expo-constants';
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl;
 
-export default function SignInScreen() {
+export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   useEffect(() => {
+    console.log('API_URL:', API_URL); // Debugging log for API_URL
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem('accessToken');
       if (token) {
@@ -38,13 +39,16 @@ export default function SignInScreen() {
   const handleLogin = async () => {
     if (email && password) {
       try {
+        console.log('Attempting login with:', { email, password }); // Debugging log
         const response = await fetch(`${API_URL}/api/users/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
         });
 
+        console.log('Response status:', response.status); // Debugging log
         const data = await response.json();
+        console.log('Response data:', data); // Debugging log
 
         if (response.ok) {
           await AsyncStorage.setItem('accessToken', data.accessToken);
@@ -61,7 +65,7 @@ export default function SignInScreen() {
           Alert.alert('Error', data.error || 'Login failed');
         }
       } catch (error) {
-        console.error(error);
+        console.error('Login error:', error); // Debugging log
         Alert.alert('Error', 'Something went wrong. Please try again.');
       }
     } else {
@@ -88,6 +92,7 @@ export default function SignInScreen() {
         <TextInput
           style={styles.input}
           placeholder="Your email"
+          placeholderTextColor="#999"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
@@ -106,6 +111,7 @@ export default function SignInScreen() {
         <TextInput
           style={styles.input}
           placeholder="Enter password"
+          placeholderTextColor="#999"
           secureTextEntry={!isPasswordVisible}
           value={password}
           onChangeText={setPassword}

@@ -38,6 +38,7 @@ export default function SignupScreen() {
     }
 
     try {
+      console.log('Attempting sign-up with:', { fullName, email, password }); // Debugging log
       const response = await fetch(
         `${API_URL}/api/users/register`, // Use API_URL from environment variable
         {
@@ -53,7 +54,9 @@ export default function SignupScreen() {
         }
       );
 
+      console.log('Response status:', response.status); // Debugging log
       const data = await response.json();
+      console.log('Response data:', data); // Debugging log
 
       if (response.ok) {
         Alert.alert('Success', 'Sign-up successful');
@@ -62,7 +65,7 @@ export default function SignupScreen() {
         Alert.alert('Error', data.error || 'Sign-up failed');
       }
     } catch (error) {
-      console.error('Error during sign-up:', error);
+      console.error('Sign-up error:', error); // Debugging log
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };

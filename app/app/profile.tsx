@@ -18,10 +18,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { MediaType } from 'expo-image-picker';
 import { WebView } from 'react-native-webview';
+import { useTheme } from '@/app/constants/ThemeContext';
 
 export default function SettingsScreen() {
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const [isPushEnabled, setIsPushEnabled] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -47,7 +48,6 @@ export default function SettingsScreen() {
   }, []);
 
   const togglePush = () => setIsPushEnabled((prev) => !prev);
-  const toggleDark = () => setIsDarkMode((prev) => !prev);
 
   const handlePress = (label: string) => {
     Alert.alert('${label} pressed');
@@ -138,7 +138,9 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, isDarkMode && { backgroundColor: '#000' }]}
+    >
       <View style={styles.headerBackground} />
 
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -190,8 +192,10 @@ export default function SettingsScreen() {
           </View>
 
           <View style={styles.row}>
-            <Text style={styles.rowText}>Dark mode</Text>
-            <Switch value={isDarkMode} onValueChange={toggleDark} />
+            <Text style={[styles.rowText, isDarkMode && { color: '#fff' }]}>
+              Dark mode
+            </Text>
+            <Switch value={isDarkMode} onValueChange={toggleDarkMode} />
           </View>
         </View>
 
