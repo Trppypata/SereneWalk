@@ -10,6 +10,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig?.extra?.apiUrl; // Use environment variable for API URL
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -17,23 +20,46 @@ export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignUp = () => {
-    // Basic form validation
+  const handleSignUp = async () => {
     if (!fullName || !email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    // Check if email is valid
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Error', 'Please enter a valid email');
       return;
     }
 
-    // Mock sign-up logic, replace with your API call
-    Alert.alert('Success', 'Sign-up successful');
-    router.push('/home'); // Redirect to login page after successful sign-up
+    try {
+      const response = await fetch(
+        `${API_URL}/api/users/register`, // Use API_URL from environment variable
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            full_name: fullName,
+            email: email,
+            password: password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert('Success', 'Sign-up successful');
+        router.push('/login');
+      } else {
+        Alert.alert('Error', data.error || 'Sign-up failed');
+      }
+    } catch (error) {
+      console.error('Error during sign-up:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
   };
 
   return (

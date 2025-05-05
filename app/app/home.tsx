@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,53 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 export default function HomePage() {
   const router = useRouter();
+  const [userName, setUserName] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const name = await AsyncStorage.getItem('userName');
+        const image = await AsyncStorage.getItem('profileImage');
+        if (name) {
+          const firstName = name.split(' ')[0];
+          setUserName(firstName);
+        }
+        if (image) setProfileImage(image);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+    loadUserData();
+  }, []);
+
+  const getAvatarSource = () => {
+    if (!profileImage) return require('@/assets/images/avatar.png');
+    if (profileImage.endsWith('.svg')) {
+      const pngUrl = profileImage.replace('/svg?', '/png?');
+      return { uri: pngUrl };
+    }
+    return { uri: profileImage };
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('accessToken');
+      Alert.alert('Logged out', 'You have been logged out successfully.');
+      router.push('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -22,13 +63,10 @@ export default function HomePage() {
           <View style={styles.header}>
             <View style={styles.headerRow}>
               <View style={styles.userInfo}>
-                <Image
-                  source={require('@/assets/images/avatar.png')}
-                  style={styles.avatar}
-                />
+                <Image source={getAvatarSource()} style={styles.avatar} />
                 <View>
                   <Text style={styles.greeting}>Hey there 👋,</Text>
-                  <Text style={styles.name}>Girlie</Text>
+                  <Text style={styles.name}>{userName || 'User'}</Text>
                 </View>
               </View>
               <Ionicons name="notifications" size={24} color="#fff" />
@@ -40,7 +78,10 @@ export default function HomePage() {
           <View style={styles.mainContent}>
             <View style={styles.actionButtons}>
               <View style={styles.cardContainer}>
-                <TouchableOpacity style={styles.card}>
+                <TouchableOpacity
+                  style={styles.card}
+                  onPress={() => router.push('/sos')}
+                >
                   <Image
                     source={require('@/assets/images/siren.png')}
                     style={styles.imageIcon}
@@ -117,11 +158,16 @@ export default function HomePage() {
           </View>
         </ScrollView>
 
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+
         {/* Bottom Nav */}
         <View style={styles.bottomNav}>
           <TouchableOpacity
             style={styles.navItem}
-            onPress={() => router.push('/homepage')}
+            onPress={() => router.push('/home')}
           >
             <Ionicons name="home" size={24} color="#DA549B" />
             <Text style={styles.navTextActive}>Home</Text>
@@ -330,5 +376,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#DA549B',
+  },
+  logoutButton: {
+    backgroundColor: '#DA549B',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    margin: 20,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });

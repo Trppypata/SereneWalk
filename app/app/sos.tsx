@@ -133,7 +133,7 @@ export default function App() {
       <View style={styles.bottomNav}>
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => router.push('/homepage')}
+          onPress={() => router.push('/home')}
         >
           <Ionicons name="home" size={24} color="gray" />
           <Text style={styles.navText}>Home</Text>

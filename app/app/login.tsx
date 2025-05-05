@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,25 +8,57 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig?.extra?.apiUrl;
 
 export default function SignInScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignUpNavigation = () => {
-    router.push('/signup');
-  };
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token) {
+        router.push('/home'); // Redirect to home if token exists
+      }
+    };
+    checkLoginStatus();
+  }, []);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (email && password) {
-      // Handle your login logic here
-      // For now, showing an alert as a placeholder
-      Alert.alert('Logged in successfully!', `Welcome back, ${email}`);
-      // You could also redirect to another screen, e.g., router.push('/Home');
-      router.push('/home');
+      try {
+        const response = await fetch(`${API_URL}/api/users/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          await AsyncStorage.setItem('accessToken', data.accessToken);
+          if (data.user?.fullName)
+            await AsyncStorage.setItem('userName', data.user.fullName);
+          if (data.user?.email)
+            await AsyncStorage.setItem('userEmail', data.user.email);
+          if (data.user?.id) await AsyncStorage.setItem('userId', data.user.id);
+          if (data.user?.profileUrl)
+            await AsyncStorage.setItem('profileImage', data.user.profileUrl);
+          Alert.alert('Logged in successfully!', `Welcome back, ${email}`);
+          router.push('/home');
+        } else {
+          Alert.alert('Error', data.error || 'Login failed');
+        }
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      }
     } else {
       Alert.alert('Error', 'Please enter both email and password');
     }
@@ -36,7 +68,7 @@ export default function SignInScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      <Text style={styles.title}>Let’s sign you in.</Text>
+      <Text style={styles.title}>Let's sign you in.</Text>
       <Text style={styles.subtitle}>Welcome back.</Text>
 
       {/* Email Field */}
@@ -85,7 +117,7 @@ export default function SignInScreen() {
 
       <Text style={styles.footerText}>
         Are you new here?{' '}
-        <Text style={styles.link} onPress={handleSignUpNavigation}>
+        <Text style={styles.link} onPress={() => router.push('/signup')}>
           Sign up
         </Text>
       </Text>
