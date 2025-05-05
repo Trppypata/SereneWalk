@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 6,
     color: '#000',
