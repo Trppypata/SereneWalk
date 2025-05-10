@@ -1,38 +1,72 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useTheme } from '../app/constants/ThemeContext';
 
 const Tip1 = () => {
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerWrapper}>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? '#333' : '#fefefe' }]}>
+      <View style={[styles.headerWrapper, { backgroundColor: isDarkMode ? '#444' : '#d63384' }]}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.push('/safetytips')} style={styles.backButton}>
-            <ArrowLeft size={30} color="#fff" />
+            <ArrowLeft size={30} color={isDarkMode ? '#ccc' : '#fff'} />
           </TouchableOpacity>
-          <Text style={styles.headerText}>Safety Tips</Text>
+          <Text style={[styles.headerText, { color: isDarkMode ? '#ccc' : '#fff' }]}>Safety Tips</Text>
         </View>
-        <View style={styles.headerCurve} />
+        <View style={[styles.headerCurve, { backgroundColor: isDarkMode ? '#333' : '#fefefe' }]} />
       </View>
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>Know you surroundings.</Text>
-        
-       
+        <Text style={[styles.title, { color: isDarkMode ? '#d63384' : '#d63384' }]}>Know you surroundings.</Text>
         <Image
           source={require('@/assets/images/know.png')} // make sure to update the path to your image
           style={styles.image}
         />
-        <Text style={styles.subtitle}>Situational Awareness.</Text>
+        <Text style={[styles.subtitle, { color: isDarkMode ? '#ddd' : '#333' }]}>Situational Awareness.</Text>
+        <Text style={[styles.paragraph, { color: isDarkMode ? '#ccc' : '#333' }]}>
+          Being aware of your environment is key to staying safe. Take note of who's around you, what's ahead, and potential 
+          exits or safe spaces nearby. Stay off your phone when moving through unfamiliar areas, and check behind you from time to time. 
+          Awareness helps you spot unusual behavior early and make quick, smart decisions if needed.
+        </Text>
+      </View>
+    </View>
+  );
+};
 
-      
-        <Text style={styles.paragraph}>
-        Being aware of your environment is key to staying safe. Take note of who's around you, what's ahead, and potential 
-        exits or safe spaces nearby. Stay off your phone when moving through unfamiliar areas, and check behind you from time to time. 
-        Awareness helps you spot unusual behavior early and make quick, smart decisions if needed.
+const Tip2 = () => {
+  const router = useRouter();
+  const { isDarkMode } = useTheme();
+
+  return (
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#000' }]}>
+      <View style={[styles.headerWrapper, isDarkMode && { backgroundColor: '#333' }]}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.push('/safetytips')} style={styles.backButton}>
+            <ArrowLeft size={30} color={isDarkMode ? '#fff' : '#000'} />
+          </TouchableOpacity>
+          <Text style={[styles.headerText, isDarkMode && { color: '#fff' }]}>Safety Tips</Text>
+        </View>
+        <View style={[styles.headerCurve, isDarkMode && { backgroundColor: '#000' }]} />
+      </View>
+
+      {/* Content */}
+      <View style={styles.content}>
+        <Text style={[styles.title, isDarkMode && { color: '#fff' }]}>Know you surroundings.</Text>
+        <Image
+          source={require('@/assets/images/know.png')} // make sure to update the path to your image
+          style={styles.image}
+        />
+        <Text style={[styles.subtitle, isDarkMode && { color: '#ccc' }]}>Situational Awareness.</Text>
+        <Text style={[styles.paragraph, isDarkMode && { color: '#ccc' }]}>
+          Being aware of your environment is key to staying safe. Take note of who's around you, what's ahead, and potential 
+          exits or safe spaces nearby. Stay off your phone when moving through unfamiliar areas, and check behind you from time to time. 
+          Awareness helps you spot unusual behavior early and make quick, smart decisions if needed.
         </Text>
       </View>
     </View>
@@ -44,10 +78,8 @@ export default Tip1;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fefefe',
   },
   headerWrapper: {
-    backgroundColor: '#d63384',
     overflow: 'hidden',
     paddingBottom: 0,
   },
@@ -63,13 +95,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   headerText: {
-    color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
   },
   headerCurve: {
     height: 30,
-    backgroundColor: '#fefefe',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     marginTop: -10,
@@ -80,7 +110,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#d63384',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -98,7 +127,6 @@ const styles = StyleSheet.create({
   },
   paragraph: {
     fontSize: 15,
-    color: '#333',
     marginBottom: 24,
   },
 });

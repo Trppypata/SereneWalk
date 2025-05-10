@@ -1,31 +1,73 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import Constants from 'expo-constants';
+
+const API_URL = Constants.expoConfig?.extra?.apiUrl; // Use environment variable for API URL
 
 export default function SignupScreen() {
   const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  const handleSignUp = () => {
-    // Basic form validation
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
+
+  const handleSignUp = async () => {
     if (!fullName || !email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    // Check if email is valid
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Error', 'Please enter a valid email');
       return;
     }
 
-    // Mock sign-up logic, replace with your API call
-    Alert.alert('Success', 'Sign-up successful');
-    router.push('/login'); // Redirect to login page after successful sign-up
+    try {
+      console.log('Attempting sign-up with:', { fullName, email, password }); // Debugging log
+      const response = await fetch(
+        `${API_URL}/api/users/register`, // Use API_URL from environment variable
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            full_name: fullName,
+            email: email,
+            password: password,
+          }),
+        }
+      );
+
+      console.log('Response status:', response.status); // Debugging log
+      const data = await response.json();
+      console.log('Response data:', data); // Debugging log
+
+      if (response.ok) {
+        Alert.alert('Success', 'Sign-up successful');
+        router.push('/login');
+      } else {
+        Alert.alert('Error', data.error || 'Sign-up failed');
+      }
+    } catch (error) {
+      console.error('Sign-up error:', error); // Debugging log
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
   };
 
   return (
@@ -44,7 +86,12 @@ export default function SignupScreen() {
 
       <Text style={styles.label}>Email</Text>
       <View style={styles.inputContainer}>
-        <Ionicons name="mail-outline" size={20} color="#999" style={styles.icon} />
+        <Ionicons
+          name="mail-outline"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
         <TextInput
           style={styles.inputField}
           placeholder="Your email"
@@ -56,14 +103,27 @@ export default function SignupScreen() {
 
       <Text style={styles.label}>Password</Text>
       <View style={styles.inputContainer}>
-        <Ionicons name="lock-closed-outline" size={20} color="#999" style={styles.icon} />
+        <Ionicons
+          name="lock-closed-outline"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
         <TextInput
           style={styles.inputField}
           placeholder="Enter password"
-          secureTextEntry
+          secureTextEntry={!isPasswordVisible}
           value={password}
           onChangeText={setPassword}
         />
+        <TouchableOpacity onPress={togglePasswordVisibility}>
+          <Ionicons
+            name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+            size={20}
+            color="#999"
+            style={styles.icon}
+          />
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleSignUp}>

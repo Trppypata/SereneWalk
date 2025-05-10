@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -9,27 +9,147 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Audio } from 'expo-av';
+import { useTheme } from '../app/constants/ThemeContext';
+import * as Location from 'expo-location';
 
-export default function App() {
-    const router = useRouter();
+const MAX_VOLUME = 1.0;
+
+export default function SosScreen() {
+  const router = useRouter();
+  const { isDarkMode } = useTheme();
+
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [isCounting, setIsCounting] = useState(false);
+  const [isSoundPlaying, setIsSoundPlaying] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<string | null>(null);
+
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  const playSosSound = async () => {
+    const { sound } = await Audio.Sound.createAsync(
+      require('@/assets/audio/sos.mp3'),
+      { shouldPlay: true, volume: 0.1, isLooping: true }
+    );
+    soundRef.current = sound;
+    setIsSoundPlaying(true);
+
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (status.isLoaded) {
+        if (!status.isPlaying && status.didJustFinish) {
+          setIsSoundPlaying(false);
+        }
+      } else {
+        console.warn('Playback status not loaded:', status);
+      }
+    });
+
+    let currentVolume = 0.1;
+    const volumeInterval = setInterval(async () => {
+      if (currentVolume < MAX_VOLUME) {
+        currentVolume = Math.min(currentVolume + 0.1, MAX_VOLUME);
+        await sound.setVolumeAsync(currentVolume);
+      } else {
+        clearInterval(volumeInterval);
+      }
+    }, 500);
+  };
+
+  const stopSosSound = async () => {
+    if (soundRef.current) {
+      await soundRef.current.stopAsync();
+      await soundRef.current.unloadAsync();
+      soundRef.current = null;
+      setIsSoundPlaying(false);
+    }
+  };
+
+  const handleSosPress = () => {
+    if (isSoundPlaying) {
+      stopSosSound();
+      return;
+    }
+
+    if (isCounting) return;
+
+    setIsCounting(true);
+    let timeLeft = 3;
+    setCountdown(timeLeft);
+
+    const interval = setInterval(() => {
+      timeLeft -= 1;
+      if (timeLeft === 0) {
+        clearInterval(interval);
+        setCountdown(null);
+        playSosSound();
+        setIsCounting(false);
+      } else {
+        setCountdown(timeLeft);
+      }
+    }, 1000);
+  };
+
+  const fetchCurrentLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.warn('Permission to access location was denied');
+      return;
+    }
+
+    const location = await Location.getCurrentPositionAsync({});
+    const { latitude, longitude } = location.coords;
+
+    const reverseGeocode = await Location.reverseGeocodeAsync({
+      latitude,
+      longitude,
+    });
+    if (reverseGeocode.length > 0) {
+      const { city, region, subregion, name } = reverseGeocode[0];
+      setCurrentLocation(`Purok-${name}, ${city}, ${subregion}, ${region}`);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentLocation();
+  }, []);
+
   return (
-    <SafeAreaView style={styles.container}>
-      
-      <View style={styles.navbar}>
+    <SafeAreaView
+      style={[styles.container, isDarkMode && { backgroundColor: '#000' }]}
+    >
+      <View style={[styles.navbar, isDarkMode && { backgroundColor: '#333' }]}>
         <View style={styles.locationLeft}>
-          <Ionicons name="location" size={18} color="#000" />
+          <Ionicons
+            name="location"
+            size={18}
+            color={isDarkMode ? '#fff' : '#000'}
+          />
           <View style={styles.locationTextWrapper}>
-            <Text style={styles.locationLabel}>Current location</Text>
-            <Text style={styles.locationName}>Tandang Sora, Quezon City</Text>
+            <Text
+              style={[styles.locationLabel, isDarkMode && { color: '#ccc' }]}
+            >
+              Current location
+            </Text>
+            <Text
+              style={[styles.locationName, isDarkMode && { color: '#fff' }]}
+            >
+              {currentLocation || 'Fetching location...'}
+            </Text>
           </View>
         </View>
-        <Ionicons name="notifications-outline" size={24} color="#000" />
+        <Ionicons
+          name="notifications-outline"
+          size={24}
+          color={isDarkMode ? '#fff' : '#000'}
+        />
       </View>
 
       <View style={styles.emergencyRow}>
         <View style={styles.textSection}>
-          <Text style={styles.title}>Are you in an emergency?</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, isDarkMode && { color: '#fff' }]}>
+            Are you in an emergency?
+          </Text>
+          <Text style={[styles.subtitle, isDarkMode && { color: '#ccc' }]}>
             Press the SOS button, it will make a very loud sound, and will
             automatically turn on the flashlight in blinking mode.
           </Text>
@@ -41,48 +161,116 @@ export default function App() {
       </View>
 
       <View style={styles.sosContainer}>
-        <View style={styles.sosBox}>
-          <TouchableOpacity style={styles.sosButton}>
-            <Text style={styles.sosText}>SOS</Text>
-            <Text style={styles.sosSubtext}>Press 3 for second</Text>
+        <View
+          style={[styles.sosBox, isDarkMode && { backgroundColor: '#333' }]}
+        >
+          <TouchableOpacity
+            style={[
+              styles.sosButton,
+              isDarkMode && { backgroundColor: '#555' },
+            ]}
+            onPress={handleSosPress}
+          >
+            {isSoundPlaying ? (
+              <Text style={[styles.sosText, isDarkMode && { color: '#fff' }]}>
+                Stop
+              </Text>
+            ) : countdown !== null ? (
+              <Text style={[styles.sosText, isDarkMode && { color: '#fff' }]}>
+                {countdown}
+              </Text>
+            ) : (
+              <>
+                <Text style={[styles.sosText, isDarkMode && { color: '#fff' }]}>
+                  SOS
+                </Text>
+                <Text
+                  style={[styles.sosSubtext, isDarkMode && { color: '#ccc' }]}
+                >
+                  Press for 3 seconds
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem}
-          onPress={() => router.push('/homepage')}>
-            <Ionicons name="home" size={24} color="gray" />
-            <Text style={styles.navText}>Home</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}
-          onPress={() => router.push('/sos')}>
-            <MaterialIcons name="sos" size={24} color="#DA549B" />
-            <Text style={styles.navTextActive}>SOS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="compass" size={24} color="gray" />
-            <Text style={styles.navText}>Explore</Text>
-          </TouchableOpacity>
-           <TouchableOpacity style={styles.navItem}
-           onPress={() => router.push('/safetytips')}>
-                <Ionicons name="bulb" size={24} color="gray" />
-                <Text style={styles.navText}>Tips</Text>
-            </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push('/profile')}>
-            <Ionicons name="person" size={24} color="gray" />
-            <Text style={styles.navText}>Profile</Text>
-          </TouchableOpacity>
-        </View>
+
+      <View
+        style={[styles.bottomNav, isDarkMode && { backgroundColor: '#333' }]}
+      >
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push('/home')}
+        >
+          <Ionicons
+            name="home"
+            size={24}
+            color={isDarkMode ? '#ccc' : 'gray'}
+          />
+          <Text style={[styles.navText, isDarkMode && { color: '#ccc' }]}>
+            Home
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push('/sos')}
+        >
+          <MaterialIcons
+            name="sos"
+            size={24}
+            color={isDarkMode ? '#DA549B' : '#DA549B'}
+          />
+          <Text
+            style={[styles.navTextActive, isDarkMode && { color: '#DA549B' }]}
+          >
+            SOS
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons
+            name="compass"
+            size={24}
+            color={isDarkMode ? '#ccc' : 'gray'}
+          />
+          <Text style={[styles.navText, isDarkMode && { color: '#ccc' }]}>
+            Explore
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push('/safetytips')}
+        >
+          <Ionicons
+            name="bulb"
+            size={24}
+            color={isDarkMode ? '#ccc' : 'gray'}
+          />
+          <Text style={[styles.navText, isDarkMode && { color: '#ccc' }]}>
+            Tips
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => router.push('/profile')}
+        >
+          <Ionicons
+            name="person"
+            size={24}
+            color={isDarkMode ? '#ccc' : 'gray'}
+          />
+          <Text style={[styles.navText, isDarkMode && { color: '#ccc' }]}>
+            Profile
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
-            
-    
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20, 
+    paddingHorizontal: 20,
     paddingTop: 12,
     backgroundColor: '#fff',
   },
@@ -119,14 +307,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
     gap: 12,
-    marginHorizontal: 20, 
+    marginHorizontal: 20,
   },
   textSection: {
     flex: 1,
     paddingRight: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 6,
     color: '#000',
@@ -141,7 +329,6 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 65,
   },
-  
   sosContainer: {
     marginTop: 50,
     alignItems: 'center',

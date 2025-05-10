@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '../app/constants/ThemeContext';
 
 interface Tip {
   id: number;
@@ -53,63 +54,64 @@ const tips: Tip[] = [
 
 const SafetyTips = () => {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   const handlePress = (TipId: number) => {
-    router.push(`/Tip${TipId}`);
+    router.push(`/tip${TipId}`);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Safety Tips</Text>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#000' }]}>
+      <Text style={[styles.header, isDarkMode && { color: '#fff' }]}>Safety Tips</Text>
       <ScrollView contentContainerStyle={styles.scrollView}>
         {tips.map((tip) => (
           <TouchableOpacity
             key={tip.id}
-            style={styles.card}
+            style={[styles.card, isDarkMode && { backgroundColor: '#333', borderColor: '#555' }]}
             onPress={() => handlePress(tip.id)}
           >
             <View style={styles.iconBox}>
               <Image source={tip.icon} style={styles.icon} />
             </View>
             <View style={styles.textBox}>
-              <Text style={styles.title}>{tip.title}</Text>
-              <Text style={styles.description}>{tip.description}</Text>
+              <Text style={[styles.title, isDarkMode && { color: '#fff' }]}>{tip.title}</Text>
+              <Text style={[styles.description, isDarkMode && { color: '#ccc' }]}>{tip.description}</Text>
             </View>
-            <Text style={styles.arrow}>→</Text>
+            <Text style={[styles.arrow, isDarkMode && { color: '#ccc' }]}>→</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, isDarkMode && { backgroundColor: '#333' }]}>
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => router.push('/homepage')}
+          onPress={() => router.push('/home')}
         >
-          <Ionicons name="home" size={24} color="gray" />
-          <Text style={styles.navText}>Home</Text>
+          <Ionicons name="home" size={24} color={isDarkMode ? '#ccc' : 'gray'} />
+          <Text style={[styles.navText, isDarkMode && { color: '#ccc' }]}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => router.push('/sos')}
         >
-          <MaterialIcons name="sos" size={24} color="gray" />
-          <Text style={styles.navText}>SOS</Text>
+          <MaterialIcons name="sos" size={24} color={isDarkMode ? '#ccc' : 'gray'} />
+          <Text style={[styles.navText, isDarkMode && { color: '#ccc' }]}>SOS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="compass" size={24} color="gray" />
-          <Text style={styles.navText}>Explore</Text>
+          <Ionicons name="compass" size={24} color={isDarkMode ? '#ccc' : 'gray'} />
+          <Text style={[styles.navText, isDarkMode && { color: '#ccc' }]}>Explore</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navItem}
           onPress={() => router.push('/safetytips')}
         >
-          <Ionicons name="bulb" size={24} color="#DA549B" />
-          <Text style={styles.navTextActive}>Tips</Text>
+          <Ionicons name="bulb" size={24} color={isDarkMode ? '#DA549B' : '#DA549B'} />
+          <Text style={[styles.navTextActive, isDarkMode && { color: '#DA549B' }]}>Tips</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => router.push('/profile')}>
-          <Ionicons name="person" size={24} color="gray" />
-          <Text style={styles.navText}>Profile</Text>
+          <Ionicons name="person" size={24} color={isDarkMode ? '#ccc' : 'gray'} />
+          <Text style={[styles.navText, isDarkMode && { color: '#ccc' }]}>Profile</Text>
         </TouchableOpacity>
       </View>
     </View>

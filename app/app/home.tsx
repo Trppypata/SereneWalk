@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,40 +7,104 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/app/constants/ThemeContext';
 
 export default function HomePage() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
+  const [userName, setUserName] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const name = await AsyncStorage.getItem('userName');
+        const image = await AsyncStorage.getItem('profileImage');
+        if (name) {
+          const firstName = name.split(' ')[0];
+          setUserName(firstName);
+        }
+        if (image) setProfileImage(image);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+    loadUserData();
+  }, []);
+
+  const getAvatarSource = () => {
+    if (!profileImage) return require('@/assets/images/avatar.png');
+    if (profileImage.endsWith('.svg')) {
+      const pngUrl = profileImage.replace('/svg?', '/png?');
+      return { uri: pngUrl };
+    }
+    return { uri: profileImage };
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('accessToken');
+      Alert.alert('Logged out', 'You have been logged out successfully.');
+      router.push('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.container}>
+    <SafeAreaView
+      style={[styles.screen, isDarkMode && { backgroundColor: '#000' }]}
+    >
+      <View
+        style={[styles.container, isDarkMode && { backgroundColor: '#000' }]}
+      >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
-          <View style={styles.header}>
+          <View
+            style={[styles.header, isDarkMode && { backgroundColor: '#333' }]}
+          >
             <View style={styles.headerRow}>
               <View style={styles.userInfo}>
-                <Image
-                  source={require('@/assets/images/avatar.png')}
-                  style={styles.avatar}
-                />
+                <Image source={getAvatarSource()} style={styles.avatar} />
                 <View>
-                  <Text style={styles.greeting}>Hey there 👋,</Text>
-                  <Text style={styles.name}>Girlie</Text>
+                  <Text
+                    style={[styles.greeting, isDarkMode && { color: '#fff' }]}
+                  >
+                    Hey there 👋,
+                  </Text>
+                  <Text style={[styles.name, isDarkMode && { color: '#fff' }]}>
+                    {userName || 'User'}
+                  </Text>
                 </View>
               </View>
-              <Ionicons name="notifications" size={24} color="#fff" />
+              <Ionicons
+                name="notifications"
+                size={24}
+                color={isDarkMode ? '#fff' : '#000'}
+              />
             </View>
-            <View style={styles.headerCurve}></View>
+            <View
+              style={[
+                styles.headerCurve,
+                isDarkMode && { backgroundColor: '#000' },
+              ]}
+            ></View>
           </View>
 
           {/* Main Content */}
           <View style={styles.mainContent}>
             <View style={styles.actionButtons}>
               <View style={styles.cardContainer}>
-                <TouchableOpacity style={styles.card}>
+                <TouchableOpacity
+                  style={styles.card}
+                  onPress={() => router.push('/sos')}
+                >
                   <Image
                     source={require('@/assets/images/siren.png')}
                     style={styles.imageIcon}
@@ -61,17 +125,19 @@ export default function HomePage() {
             </View>
 
             <View style={styles.journeyCard}>
-             <Image
+              <Image
                 source={require('@/assets/images/girl.png')}
-                style={styles.journeyImage}/>
-           <View style={styles.journeyTextContainer}>
-             <Text style={styles.journeyTitle}>Start a journey</Text>
-             <Text style={styles.journeySub}>
-                 Enter your destination and the app will navigate you on the most safe route.
-             </Text>
-          </View>
-            <Ionicons name="arrow-forward" size={24} color="#374151" />
-          </View>
+                style={styles.journeyImage}
+              />
+              <View style={styles.journeyTextContainer}>
+                <Text style={styles.journeyTitle}>Start a journey</Text>
+                <Text style={styles.journeySub}>
+                  Enter your destination and the app will navigate you on the
+                  most safe route.
+                </Text>
+              </View>
+              <Ionicons name="arrow-forward" size={24} color="#374151" />
+            </View>
 
             {/* Nearby Services */}
             <View style={styles.services}>
@@ -115,27 +181,86 @@ export default function HomePage() {
           </View>
         </ScrollView>
 
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={[
+            styles.logoutButton,
+            isDarkMode && { backgroundColor: '#333' },
+          ]}
+          onPress={handleLogout}
+        >
+          <Text style={[styles.logoutText, isDarkMode && { color: '#fff' }]}>
+            Logout
+          </Text>
+        </TouchableOpacity>
+
         {/* Bottom Nav */}
-        <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push('/homepage')}>
-            <Ionicons name="home" size={24} color="#DA549B" />
-            <Text style={styles.navTextActive}>Home</Text>
+        <View
+          style={[styles.bottomNav, isDarkMode && { backgroundColor: '#333' }]}
+        >
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push('/home')}
+          >
+            <Ionicons
+              name="home"
+              size={24}
+              color={isDarkMode ? '#fff' : '#DA549B'}
+            />
+            <Text
+              style={[styles.navTextActive, isDarkMode && { color: '#fff' }]}
+            >
+              Home
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push('/sos')}>
-            <MaterialIcons name="sos" size={24} color="gray" />
-            <Text style={styles.navText}>SOS</Text>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push('/sos')}
+          >
+            <MaterialIcons
+              name="sos"
+              size={24}
+              color={isDarkMode ? '#fff' : 'gray'}
+            />
+            <Text style={[styles.navText, isDarkMode && { color: '#fff' }]}>
+              SOS
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.navItem}>
-            <Ionicons name="compass" size={24} color="gray" />
-            <Text style={styles.navText}>Explore</Text>
+            <Ionicons
+              name="compass"
+              size={24}
+              color={isDarkMode ? '#fff' : 'gray'}
+            />
+            <Text style={[styles.navText, isDarkMode && { color: '#fff' }]}>
+              Explore
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push('/safetytips')}>
-            <Ionicons name="bulb" size={24} color="gray" />
-            <Text style={styles.navText}>Tips</Text>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push('/safetytips')}
+          >
+            <Ionicons
+              name="bulb"
+              size={24}
+              color={isDarkMode ? '#fff' : 'gray'}
+            />
+            <Text style={[styles.navText, isDarkMode && { color: '#fff' }]}>
+              Tips
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem}onPress={() => router.push('/profile')}>
-            <Ionicons name="person" size={24} color="gray" />
-            <Text style={styles.navText}>Profile</Text>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push('/profile')}
+          >
+            <Ionicons
+              name="person"
+              size={24}
+              color={isDarkMode ? '#fff' : 'gray'}
+            />
+            <Text style={[styles.navText, isDarkMode && { color: '#fff' }]}>
+              Profile
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -242,30 +367,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  
+
   journeyImage: {
     width: 50,
     height: 50,
     marginRight: 12,
     resizeMode: 'contain',
   },
-  
+
   journeyTextContainer: {
     flex: 1,
   },
-  
+
   journeyTitle: {
     fontWeight: 'bold',
     fontSize: 16,
     color: '#1f2937', // dark text
     marginBottom: 4,
   },
-  
+
   journeySub: {
     fontSize: 13,
     color: '#6b7280', // gray text
   },
-  
+
   services: {
     paddingBottom: 24,
   },
@@ -316,5 +441,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#DA549B',
+  },
+  logoutButton: {
+    backgroundColor: '#DA549B',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    margin: 20,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
